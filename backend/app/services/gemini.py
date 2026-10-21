@@ -44,16 +44,25 @@ def build_gemini_response_schema() -> dict:
 def build_analysis_prompt(request: AnalyzeRequest) -> str:
     provided_information = request.model_dump(mode="json")
 
-    if request.daily_preparation_minutes is not None:
+        if request.daily_preparation_minutes is not None:
         preparation_guidance = f"""
 Return exactly seven actions labeled Day 1 through Day 7.
-Each action must include a practical task, estimated minutes, and a reason.
-No day's estimated minutes may exceed the user's limit of
-{request.daily_preparation_minutes} minutes.
-Prioritize explicit mandatory gaps, then mandatory unknowns,
-then preferred gaps. Preferred gaps are not mandatory blockers.
-Avoid duplicate tasks and ground every task in the supplied profile
-and opportunity description.
+Each action must include:
+- A practical, specific task.
+- A realistic estimated duration in minutes.
+- A reason tied to a requirement or evidence gap.
+
+STRICT TIME LIMIT:
+- The estimated duration for each day must be between 1 and
+  {request.daily_preparation_minutes} minutes, inclusive.
+- Never exceed the user's daily time limit.
+- Choose tasks that can realistically be completed in the stated time.
+- Do not describe a multi-hour task as a 1-minute activity.
+- Include the duration explicitly, e.g. "(30 minutes)".
+- Avoid duplicate tasks and ground every task in the supplied
+  profile and opportunity description.
+- Prioritize mandatory gaps, then mandatory unknowns, then preferred gaps.
+- Preferred gaps are not mandatory blockers.
 """
     else:
         preparation_guidance = """
